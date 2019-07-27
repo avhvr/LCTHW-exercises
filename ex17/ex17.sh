@@ -2,8 +2,6 @@
 
 set -xe
 
-make
-
 valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes ./ex17_ec db.dat c 100 30
 
 valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes ./ex17_ec db.dat s 1 harsha harsha@allu.com
@@ -25,3 +23,4 @@ valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes ./ex17_ec d
 valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes ./ex17_ec db.dat l
 
 make clean
+
