@@ -1,4 +1,4 @@
-CFLAGS=-Wall -g -DNDEBUG
+CFLAGS         = -Wall -g -DNDEBUG
 
 all: ex19
 

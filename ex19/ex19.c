@@ -1,4 +1,4 @@
-#include "dbg.h"
+#include "../debug/dbg.h"
 #include <stdlib.h>
 #include <stdio.h>
 
