@@ -34,6 +34,7 @@ int lscanf(char *string, int max_len, char *errmsg)
     // trim newline
     if (string[len - 1] == '\n') string[len - 1] = 0;
 
+    return 0;
 error:
     return 1;
 }
