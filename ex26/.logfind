@@ -1,12 +1,5 @@
-/var/log/messages
-/var/log/auth.log
-/var/log/kern.log
-/var/log/cron.log
-/var/log/mailog
-/var/log/qmail
-/var/log/httpd
-      
+/var/log/*.log
 
-/var/log/lighttpd
-/var/log/boot.log
+
+/home/avhvr/avhvr.log
 /var/log/mysqld.log
