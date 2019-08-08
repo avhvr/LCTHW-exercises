@@ -24,6 +24,7 @@ void usage()
     printf("Usage: logfind [-o] searchterm [searchterm, ...]\n"
            "Search through the log files in ~/%s\n\n"
            "-o  enable OR logic for searchterms\n", LOGFIND);
+    exit(1);
 }
 
 /* check if a string is full of whitespace */
@@ -69,28 +70,27 @@ void search_the_logfile(char *logfile, FILE *logfile_fd, int argc, char *argv[])
 
 int main (int argc, char *argv[])
 {
-    if (argc == 1)  goto error;
+    if (argc == 1)  usage();
 
-    // home directory
-    const char *home_dir;
-    // absolute path to ~/.logfind
-    char logfind[100];
+    const char *home_dir;    // home directory
 
-    // ~/.logfind
-    FILE *logfind_fd;
+    char logfind[100];    // absolute path to ~/.logfind
+
+    FILE *logfind_fd;    // ~/.logfind
 
     char *logfile = NULL;
     size_t length = 0;
     ssize_t read;
 
-    // a log file mentioned in ~/.logfind
-    FILE *logfile_fd;
+    FILE *logfile_fd;     // a log file mentioned in ~/.logfind
 
-    int c;
+    int ret;
     extern int optind;
 
-    while ((c = getopt(argc, argv, "o")) != -1) {
-        switch(c) {
+    glob_t files;
+
+    while ((ret = getopt(argc, argv, "o")) != -1) {
+        switch(ret) {
             case 'o':
                 OFLAG = 1;
                 debug("Using the OR logic");
@@ -103,9 +103,9 @@ int main (int argc, char *argv[])
     for (int i = optind; i < argc; i++ ) NSTF++;
 
     home_dir = getpwuid(getuid())->pw_dir;
-    debug("Home directory : %s", home_dir);
 
     sprintf(logfind, "%s/%s", home_dir, LOGFIND);
+    debug("~/.logfind : %s", logfind);
     logfind_fd = fopen(logfind, "r");
     check(logfind_fd != NULL, "%s", logfind);
 
@@ -115,20 +115,27 @@ int main (int argc, char *argv[])
 
         logfile[read -1] = '\0';
 
-        logfile_fd = fopen(logfile, "r");
-        if (logfile_fd == NULL) {
-            log_err("%s", logfile);
-            continue;
+        ret = glob(logfile, GLOB_NOCHECK, NULL, &files);
+        check(ret == 0, "%s", logfile);
+
+        for (int i = 0; i < files.gl_pathc; i++) {
+            logfile_fd = fopen(files.gl_pathv[i], "r");
+            if (logfile_fd == NULL) {
+                log_err("%s", logfile);
+                continue;
+            }
+            debug("Reading %s", files.gl_pathv[i]);
+            search_the_logfile(files.gl_pathv[i], logfile_fd, argc, argv);
         }
 
-        debug("Reading %s", logfile);
-        search_the_logfile(logfile, logfile_fd, argc, argv);
+        globfree(&files);
     }
 
     fclose(logfind_fd);
     free(logfile);
     return 0;
 error:
-    usage();
+    if (logfind_fd) fclose(logfind_fd);
+    if (logfile) free(logfile);
     return 1;
 }
