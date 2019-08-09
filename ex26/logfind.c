@@ -38,7 +38,7 @@ int is_empty(const char *string) {
 }
 
 /* search through the file and print the lines with search terms */
-void search_the_logfile(char *logfile, FILE *logfile_fd, int argc, char *argv[])
+int search_the_logfile(char *logfile, FILE *logfile_fd, int argc, char *argv[])
 {
     char *logline = NULL;
     size_t length = 0;
@@ -46,6 +46,8 @@ void search_the_logfile(char *logfile, FILE *logfile_fd, int argc, char *argv[])
 
     int nstf;
     int line = 0;
+
+    int nlines = 0;
 
     extern int optind;
 
@@ -60,12 +62,15 @@ void search_the_logfile(char *logfile, FILE *logfile_fd, int argc, char *argv[])
             if (strstr(logline, argv[c])) nstf++;
         }
 
-        if ((nstf >= 1) && (OFLAG || nstf == NSTF))
-                printf("%s:%d : %s", logfile, line, logline);
+        if ((nstf >= 1) && (OFLAG || nstf == NSTF)) {
+            printf("%s:%d : %s", logfile, line, logline);
+            nlines++;
+        }
     }
 
     fclose(logfile_fd);
     free(logline);
+    return nlines;
 }
 
 int main (int argc, char *argv[])
@@ -125,7 +130,8 @@ int main (int argc, char *argv[])
                 continue;
             }
             debug("Reading %s", files.gl_pathv[i]);
-            search_the_logfile(files.gl_pathv[i], logfile_fd, argc, argv);
+            ret = search_the_logfile(files.gl_pathv[i], logfile_fd, argc, argv);
+            if (ret == 0) debug("Nothing found in %s", files.gl_pathv[i]);
         }
 
         globfree(&files);
